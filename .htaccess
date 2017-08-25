@@ -1,0 +1,10 @@
+RewriteEngine On
+
+RewriteCond %{HTTPS} off
+RewriteCond %{HTTP:X-Forwarded-Proto} !https
+RewriteRule ^(.*) https://%{HTTP_HOST}/$1 [R,L]
+
+RewriteRule ^api/(.*)$ /proxy\.php/$1 [L,QSA]
+
+RewriteCond %{REQUEST_URI} !^/proxy\.php [NC]
+RewriteRule ^(.*)$ /$1 [L,QSA,NC]
