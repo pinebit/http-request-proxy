@@ -9,8 +9,13 @@ define('REQUEST_TIMEOUT', 180);
 define('BASEPATH', getcwd());
 require_once 'http_build_url.php';
 
+// A helper function to check if one string starts with another substring.
+function starts_with($string, $query) {
+	return substr($string, 0, strlen($query)) === $query;
+}
+
 // First we reconstruct the request URI as following:
-// https://www.mysite.com/get_products?filter=1 => https://www.example.com/get_products?filter=1
+// https://www.mysite.com/api/get_products?filter=1 => https://www.example.com/api/get_products?filter=1
 $parsed_url = parse_url($_SERVER['REQUEST_URI']);
 $parsed_url['host'] = TARGET_HOST;
 $parsed_url['scheme'] = 'https';
@@ -58,21 +63,12 @@ $response_content_type = curl_getinfo($session, CURLINFO_CONTENT_TYPE);
 $response_error = curl_error($session);
 curl_close($session);
 
-// This block copies all HTTP headers from curl's response to this php response
-$headers = array();
+// This part copies all Set-Cookie headers from curl's response to this php response
 $header_text = substr($response, 0, strpos($response, "\r\n\r\n"));
-
 foreach (explode("\r\n", $header_text) as $i => $line)
-    if ($i === 0)
-        $headers['http_code'] = $line;
-    else {
-        list ($key, $value) = explode(': ', $line);
-        $headers[$key] = $value;
-    }
-
-foreach ($headers as $header) {
-    header($header, 1);
-}
+	if (starts_with($line, "Set-Cookie")) {
+		header($line, 0);
+	}
 
 header("Content-type: $response_content_type", 1);
 

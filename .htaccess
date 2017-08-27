@@ -1,10 +1,20 @@
+#
+# This config uses rewrite module to feed http requests to proxy.php script.
+# In this example, all requests made within path /api is considered an AJAX request that needs to be proxied.
+#
+
 RewriteEngine On
 
+# First of all we ensure any requests are HTTPS requests.
+# Check whether you need https for your site: https://doesmysiteneedhttps.com
 RewriteCond %{HTTPS} off
 RewriteCond %{HTTP:X-Forwarded-Proto} !https
 RewriteRule ^(.*) https://%{HTTP_HOST}/$1 [R,L]
 
+# This rule will forward all requests starting api/* to the proxy script.
 RewriteRule ^api/(.*)$ /proxy\.php/$1 [L,QSA]
 
+# All other requests to have default behavior.
+# For example, you may serve your static files from the root.
 RewriteCond %{REQUEST_URI} !^/proxy\.php [NC]
 RewriteRule ^(.*)$ /$1 [L,QSA,NC]
