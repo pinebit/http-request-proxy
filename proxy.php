@@ -2,6 +2,10 @@
 
 // Define your HTTP API server (domain only) here
 define('TARGET_HOST', "www.example.com");
+// Define your HTTP API server (port only) here
+define('TARGET_PORT', "443");
+// Choose HTTP or HTTPS
+define('TARGET_SCHEME', "https");
 // Change request timeout as needed
 define('REQUEST_TIMEOUT', 180);
 
@@ -18,7 +22,8 @@ function starts_with($string, $query) {
 // https://www.mysite.com/api/get_products?filter=1 => https://www.example.com/api/get_products?filter=1
 $parsed_url = parse_url($_SERVER['REQUEST_URI']);
 $parsed_url['host'] = TARGET_HOST;
-$parsed_url['scheme'] = 'https';
+$parsed_url['port'] = TARGET_PORT;
+$parsed_url['scheme'] = TARGET_SCHEME;
 $new_url = http_build_url($parsed_url);
 
 // Initialize and configure our curl session
@@ -36,8 +41,12 @@ if ($request_method === 'POST') {
     curl_setopt($session, CURLOPT_CUSTOMREQUEST, $request_method);
 }
 
+// HTTP headers
 $request_content_type = $_SERVER["CONTENT_TYPE"];
 curl_setopt($session, CURLOPT_HTTPHEADER, array("Content-Type: $request_content_type"));
+if ( $_SERVER['PHP_AUTH_USER'] ) {
+    curl_setopt($session, CURLOPT_USERPWD, $_SERVER['PHP_AUTH_USER'].":".$_SERVER['PHP_AUTH_PW']);
+}
 curl_setopt($session, CURLOPT_FOLLOWLOCATION, true);
 curl_setopt($session, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($session, CURLOPT_SSL_VERIFYPEER, 1);
@@ -66,7 +75,7 @@ curl_close($session);
 // This part copies all Set-Cookie headers from curl's response to this php response
 $header_text = substr($response, 0, strpos($response, "\r\n\r\n"));
 foreach (explode("\r\n", $header_text) as $i => $line)
-	if (starts_with($line, "Set-Cookie")) {
+	if (starts_with($line, "Set-Cookie") || starts_with($line, "WWW-Authenticate") || starts_with($line, "Location")) {
 		header($line, 0);
 	}
 
