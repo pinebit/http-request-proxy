@@ -1,7 +1,9 @@
 <?php
 
-// Define your HTTP API server (domain and port only) here
+// Define your HTTP API server (domain only) here
 define('TARGET_HOST', "www.example.com");
+// Define your HTTP API server (port only) here
+define('TARGET_PORT', "443");
 // Choose HTTP or HTTPS
 define('TARGET_SCHEME', "https");
 // Change request timeout as needed
@@ -20,6 +22,7 @@ function starts_with($string, $query) {
 // https://www.mysite.com/api/get_products?filter=1 => https://www.example.com/api/get_products?filter=1
 $parsed_url = parse_url($_SERVER['REQUEST_URI']);
 $parsed_url['host'] = TARGET_HOST;
+$parsed_url['port'] = TARGET_PORT;
 $parsed_url['scheme'] = TARGET_SCHEME;
 $new_url = http_build_url($parsed_url);
 
