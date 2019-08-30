@@ -75,7 +75,7 @@ curl_close($session);
 // This part copies all Set-Cookie headers from curl's response to this php response
 $header_text = substr($response, 0, strpos($response, "\r\n\r\n"));
 foreach (explode("\r\n", $header_text) as $i => $line)
-	if (starts_with($line, "Set-Cookie") || starts_with($line, "WWW-Authenticate")) {
+	if (starts_with($line, "Set-Cookie") || starts_with($line, "WWW-Authenticate") || starts_with($line, "Location")) {
 		header($line, 0);
 	}
 
